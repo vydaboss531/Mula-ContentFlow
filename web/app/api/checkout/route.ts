@@ -14,6 +14,11 @@ export async function POST(req: Request) {
     try {
         const { priceId } = await req.json();
 
+        // Basic validation
+        if (!priceId) {
+            return NextResponse.json({ error: "Price ID is required" }, { status: 400 });
+        }
+
         const session = await stripe.checkout.sessions.create({
             mode: "subscription",
             payment_method_types: ["card"],
@@ -29,6 +34,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ sessionId: session.id });
     } catch (err: any) {
+        console.error("Stripe Checkout Error:", err);
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }

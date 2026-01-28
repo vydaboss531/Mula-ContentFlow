@@ -1,12 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
     const [url, setUrl] = useState("");
     const [format, setFormat] = useState("blog");
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [history, setHistory] = useState<any[]>([]);
+
+    const fetchHistory = async () => {
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+            const res = await fetch(`${apiUrl}/history`);
+            const data = await res.json();
+            setHistory(data.jobs || []);
+        } catch (err) {
+            console.error("Failed to fetch history");
+        }
+    };
+
+    useEffect(() => {
+        fetchHistory();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,6 +38,7 @@ export default function Home() {
             });
             const data = await res.json();
             setResult(data);
+            fetchHistory(); // Refresh history
         } catch (err) {
             alert("Error generating content. Is the agent running?");
         } finally {
@@ -149,6 +166,39 @@ export default function Home() {
                                     value={result.generated_content}
                                 />
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* History Section */}
+                {history.length > 0 && (
+                    <div className="w-full max-w-4xl mt-24 mb-20 animate-in fade-in duration-1000">
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                            Recent Generations
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {history.map((job, idx) => (
+                                <div
+                                    key={idx}
+                                    className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all cursor-pointer group"
+                                    onClick={() => {
+                                        setResult({
+                                            video: { title: job.title, url: job.video_url, description: "Loaded from history..." },
+                                            generated_content: job.content
+                                        });
+                                        window.scrollTo({ top: 500, behavior: 'smooth' });
+                                    }}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="text-[10px] uppercase tracking-widest text-purple-400 font-bold">{job.format_type}</span>
+                                        <span className="text-[10px] text-gray-500">{new Date(job.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                    <h4 className="text-sm font-medium text-gray-200 line-clamp-1 group-hover:text-white transition-colors">
+                                        {job.title}
+                                    </h4>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}

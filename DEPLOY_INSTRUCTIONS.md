@@ -15,6 +15,18 @@
 3.  Connect Render/Fly to the repo and point it to the `agents` folder.
 4.  Add `OPENAI_API_KEY` to the environment variables on the dashboard.
 
-## 3. Stripe
-1.  Get your API Keys from [dashboard.stripe.com](https://dashboard.stripe.com).
-2.  Add them to the Vercel variables.
+## 4. Supabase Setup
+1. Create a table named `jobs`:
+```sql
+create table jobs (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  video_url text not null,
+  title text,
+  format_type text,
+  content text,
+  status text
+);
+```
+2. Add `SUPABASE_URL` and `SUPABASE_KEY` (Service Role Key or Anon Key with RLS disabled for MVP) to Render environment variables.
+

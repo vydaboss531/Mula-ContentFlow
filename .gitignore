@@ -1,0 +1,14 @@
+# System
+.DS_Store
+
+# NodeJS
+node_modules/
+.next/
+web/.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+agents/venv/
+agents/.env
+.env

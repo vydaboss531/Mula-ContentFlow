@@ -35,11 +35,20 @@ def run_growth_bot():
     Trigger the growth bot manually or via Cron.
     """
     try:
-        report_file = auto_process_trending()
-        with open(report_file, "r") as f:
-            content = f.read()
-        return {"status": "executed", "report": content}
+        discoveries = auto_process_trending()
+        
+        # Save each discovery to the database so it appears in history
+        for d in discoveries:
+            db.save_job(
+                video_url=d['url'],
+                title=f"[TRENDING] {d['title']}",
+                format_type=d['format'],
+                result=d['content']
+            )
+            
+        return {"status": "executed", "discoveries_count": len(discoveries), "results": discoveries}
     except Exception as e:
+        print(f"Growth Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/process")

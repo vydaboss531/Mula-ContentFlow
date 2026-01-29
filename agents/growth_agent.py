@@ -55,12 +55,13 @@ import datetime
 
 def auto_process_trending():
     """
-    Main loop: Search -> Process -> Save
+    Main loop: Search -> Process -> Return results for persistence
     """
     print("--- Starting Growth Bot ---")
     
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     report_file = f"../growth_report_{timestamp}.md"
+    discoveries = []
     
     with open(report_file, "w") as f:
         f.write(f"# Growth Board Report - {timestamp}\n\n")
@@ -69,18 +70,25 @@ def auto_process_trending():
         print(f"\nSearching for verified viral hits: '{kw}'...")
         videos = search_trending_videos(kw)
         
-        for vid in videos[:2]: # Limit to top 2 per keyword to save API credits during test
+        for vid in videos[:2]: # Limit for speed/API cost
             print(f"  > Processing: {vid['title']}")
             
-            # 1. Get Transcript (Mock/Description for now)
-            # In a real run, this would call downloader.get_video_data(vid['url'])
-            # We'll simulate it for speed or use the title as context if transcript fails
+            # 1. Get Context
             context = f"Video Title: {vid['title']}. Video Link: {vid['url']}"
             
-            # 2. Generate Tweet Thread
+            # 2. Generate
             content = repurpose_content(context, "tweet")
             
-            # 3. Save to Report
+            # 3. Store result
+            discovery = {
+                "title": vid['title'],
+                "url": vid['url'],
+                "content": content,
+                "format": "tweet"
+            }
+            discoveries.append(discovery)
+            
+            # 4. Save to Local Report
             with open(report_file, "a") as f:
                 f.write(f"## {vid['title']}\n")
                 f.write(f"**URL**: {vid['url']}\n\n")
@@ -88,10 +96,10 @@ def auto_process_trending():
                 f.write(content + "\n\n")
                 f.write("---\n\n")
             
-            print("    [+] Content generated and saved.")
+            print("    [+] Content generated and stored.")
 
     print(f"\n[SUCCESS] Report generated: {report_file}")
-    return report_file
+    return discoveries
 
 if __name__ == "__main__":
     auto_process_trending()

@@ -6,6 +6,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Stripe key missing on server" }, { status: 500 });
     }
 
+    // Force cast version to any to bypass strict SDK type checks that cause build failures
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
         // @ts-ignore
         apiVersion: "2023-10-16",
@@ -14,7 +15,6 @@ export async function POST(req: Request) {
     try {
         const { priceId } = await req.json();
 
-        // Basic validation
         if (!priceId) {
             return NextResponse.json({ error: "Price ID is required" }, { status: 400 });
         }
